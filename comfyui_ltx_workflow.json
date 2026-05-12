@@ -1,0 +1,276 @@
+{
+  "last_node_id": 16,
+  "last_link_id": 24,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UnetLoaderGGUF",
+      "title": "GGUF Model Loader — LTX 2.3",
+      "pos": [40, 80],
+      "size": [300, 100],
+      "outputs": [{ "name": "MODEL", "type": "MODEL", "links": [1, 8] }],
+      "properties": {},
+      "widgets_values": ["ltx-video-2b-v2.3.Q8_0.gguf"]
+    },
+    {
+      "id": 2,
+      "type": "CLIPLoader",
+      "title": "CLIP Loader",
+      "pos": [40, 220],
+      "size": [300, 80],
+      "outputs": [{ "name": "CLIP", "type": "CLIP", "links": [2, 3] }],
+      "properties": {},
+      "widgets_values": ["t5xxl_fp8_e4m3fn.safetensors", "ltxv"]
+    },
+    {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "title": "Prompt — Art Style & Camera",
+      "pos": [400, 40],
+      "size": [420, 160],
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 2 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [4] }],
+      "properties": {},
+      "widgets_values": [
+        "A dramatic low-angle shot, Street Fighter III: 3rd Strike, hand-drawn 32-bit pixel art, high contrast ink-brush textures, dynamic lighting, impactful particle fx, arcade authenticity"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "title": "Prompt — Action & SFX",
+      "pos": [400, 240],
+      "size": [420, 160],
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 3 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [5] }],
+      "properties": {},
+      "widgets_values": [
+        "Character executes a powerful move, glowing elemental energy, particle explosion, motion blur on limbs, temporal shift effect, shockwave impact, high contrast sfx"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "ConditioningCombine",
+      "title": "Combine Conditioning",
+      "pos": [880, 140],
+      "size": [240, 80],
+      "inputs": [
+        { "name": "conditioning_1", "type": "CONDITIONING", "link": 4 },
+        { "name": "conditioning_2", "type": "CONDITIONING", "link": 5 }
+      ],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [6] }],
+      "properties": {}
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "title": "Negative Prompt",
+      "pos": [400, 440],
+      "size": [420, 120],
+      "inputs": [{ "name": "clip", "type": "CLIP", "link": 3 }],
+      "outputs": [{ "name": "CONDITIONING", "type": "CONDITIONING", "links": [7] }],
+      "properties": {},
+      "widgets_values": [
+        "blurry, low quality, ghosting, temporal artifacts, watermark, 3d render, photorealistic, jpeg compression"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "LoraLoaderModelOnly",
+      "title": "Distilled LoRA — Quality & Speed",
+      "pos": [40, 360],
+      "size": [300, 120],
+      "inputs": [{ "name": "model", "type": "MODEL", "link": 1 }],
+      "outputs": [{ "name": "MODEL", "type": "MODEL", "links": [8] }],
+      "properties": {},
+      "widgets_values": [
+        "ltxv-2b-distilled-v0.9.7.safetensors",
+        0.95
+      ]
+    },
+    {
+      "id": 8,
+      "type": "VAELoader",
+      "title": "VAE Loader",
+      "pos": [40, 520],
+      "size": [300, 80],
+      "outputs": [{ "name": "VAE", "type": "VAE", "links": [9, 14] }],
+      "properties": {},
+      "widgets_values": ["ltxv-vae.safetensors"]
+    },
+    {
+      "id": 9,
+      "type": "LTXVConditioning",
+      "title": "LTX Conditioning + Resolution (Math-Enforced)",
+      "pos": [880, 300],
+      "size": [340, 280],
+      "inputs": [
+        { "name": "positive", "type": "CONDITIONING", "link": 6 },
+        { "name": "negative", "type": "CONDITIONING", "link": 7 },
+        { "name": "vae", "type": "VAE", "link": 9 }
+      ],
+      "outputs": [
+        { "name": "positive", "type": "CONDITIONING", "links": [10] },
+        { "name": "negative", "type": "CONDITIONING", "links": [11] }
+      ],
+      "properties": {
+        "note": "Width/Height enforced divisible-by-32 via floor(value/32)*32"
+      },
+      "widgets_values": [
+        1280,
+        736,
+        121,
+        25,
+        0.95
+      ]
+    },
+    {
+      "id": 10,
+      "type": "LTXVScheduler",
+      "title": "LTX Scheduler",
+      "pos": [880, 620],
+      "size": [340, 140],
+      "inputs": [
+        { "name": "positive", "type": "CONDITIONING", "link": 10 }
+      ],
+      "outputs": [
+        { "name": "sigmas", "type": "SIGMAS", "links": [12] }
+      ],
+      "properties": {},
+      "widgets_values": [
+        25,
+        1.0,
+        0.1,
+        "linear"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "EmptyLTXVLatentVideo",
+      "title": "Empty Latent — 121 frames @ 720p",
+      "pos": [1280, 180],
+      "size": [300, 140],
+      "outputs": [{ "name": "LATENT", "type": "LATENT", "links": [13] }],
+      "properties": {
+        "note": "Fallback: change to 640x368 if VRAM OOM"
+      },
+      "widgets_values": [
+        1280,
+        736,
+        121,
+        1
+      ]
+    },
+    {
+      "id": 12,
+      "type": "SamplerCustomAdvanced",
+      "title": "LTX Sampler — Tiled Diffusion 512",
+      "pos": [1280, 360],
+      "size": [360, 320],
+      "inputs": [
+        { "name": "noise", "type": "NOISE", "link": null },
+        { "name": "guider", "type": "GUIDER", "link": null },
+        { "name": "sampler", "type": "SAMPLER", "link": null },
+        { "name": "sigmas", "type": "SIGMAS", "link": 12 },
+        { "name": "latent_image", "type": "LATENT", "link": 13 }
+      ],
+      "outputs": [
+        { "name": "output", "type": "LATENT", "links": [14] },
+        { "name": "denoised_output", "type": "LATENT", "links": [] }
+      ],
+      "properties": {
+        "tiled_diffusion_tile_size": 512,
+        "temporal_size": 2048,
+        "temporal_overlap": 64,
+        "note": "Tiled Diffusion=512 is the key VRAM bottleneck fix for 5070Ti. Prevents VRAM spike during temporal calculation."
+      },
+      "widgets_values": [
+        "euler",
+        "sgm_uniform",
+        512,
+        2048,
+        64
+      ]
+    },
+    {
+      "id": 13,
+      "type": "VAEDecodeLTXV",
+      "title": "VAE Decode — Video",
+      "pos": [1700, 380],
+      "size": [280, 100],
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 14 },
+        { "name": "vae", "type": "VAE", "link": null }
+      ],
+      "outputs": [{ "name": "IMAGES", "type": "IMAGE", "links": [15] }],
+      "properties": {},
+      "widgets_values": [1, true]
+    },
+    {
+      "id": 14,
+      "type": "VHS_VideoCombine",
+      "title": "Video Combine — MP4 @ 24fps",
+      "pos": [1700, 520],
+      "size": [320, 200],
+      "inputs": [{ "name": "images", "type": "IMAGE", "link": 15 }],
+      "outputs": [{ "name": "Filenames", "type": "VHS_FILENAMES", "links": [] }],
+      "properties": {},
+      "widgets_values": [
+        24,
+        "animation",
+        "mp4",
+        "H.264",
+        true,
+        false,
+        0,
+        "default"
+      ]
+    }
+  ],
+  "links": [
+    [1,  1, 0,  7, 0, "MODEL"],
+    [2,  2, 0,  3, 0, "CLIP"],
+    [3,  2, 0,  4, 0, "CLIP"],
+    [4,  3, 0,  5, 0, "CONDITIONING"],
+    [5,  4, 0,  5, 1, "CONDITIONING"],
+    [6,  5, 0,  9, 0, "CONDITIONING"],
+    [7,  6, 0,  9, 1, "CONDITIONING"],
+    [8,  7, 0, 12, 0, "MODEL"],
+    [9,  8, 0,  9, 2, "VAE"],
+    [10, 9, 0, 10, 0, "CONDITIONING"],
+    [11, 9, 1, 12, 1, "CONDITIONING"],
+    [12,10, 0, 12, 3, "SIGMAS"],
+    [13,11, 0, 12, 4, "LATENT"],
+    [14,12, 0, 13, 0, "LATENT"],
+    [15,13, 0, 14, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "title": "Model Loading",
+      "bounding": [20, 60, 360, 560],
+      "color": "#1a1a2e"
+    },
+    {
+      "title": "Prompting",
+      "bounding": [380, 20, 540, 560],
+      "color": "#16213e"
+    },
+    {
+      "title": "Sampler & Output",
+      "bounding": [860, 120, 1180, 700],
+      "color": "#0f3460"
+    }
+  ],
+  "config": {},
+  "extra": {
+    "vram_notes": {
+      "rtx_5070ti_vram": "16GB GDDR7",
+      "tiled_diffusion_tile": 512,
+      "temporal_size": 2048,
+      "safe_resolution": "1280x736",
+      "fallback_resolution": "640x368",
+      "oom_action": "Reduce EmptyLTXVLatentVideo to 640x368 if VRAM OOM"
+    }
+  },
+  "version": 0.4
+}
