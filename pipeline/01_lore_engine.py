@@ -1,7 +1,9 @@
 """
 MODULE 1: LORE-LOGIC ENGINE
-Role: World-state authority. Generates and validates all canonical data.
-Output: Structured JSON consumed by every downstream module.
+Role: World-state authority and canonical data schema.
+      Defines and exports structured production manifests consumed by all downstream modules.
+Input:  Producer-defined asset definitions
+Output: pipeline/lore/{ASSET_ID}.json + pipeline/lore/lore_index.json
 """
 
 import json
@@ -11,81 +13,83 @@ from typing import List, Optional
 
 
 @dataclass
-class Move:
+class Action:
     name: str
-    type: str           # fire, grass, water, normal, etc.
-    category: str       # attack | status | special
-    power: int
-    pp: int
+    category: str           # attack | status | special | idle | transition
+    power: int              # 0 for non-combat actions
+    duration_frames: int    # how long the action plays at 24fps
     effect: Optional[str] = None
-    sfx_tags: List[str] = field(default_factory=list)   # → feeds VFX module
-    motion_tag: str = ""                                  # → feeds Motion Hub
+    sfx_tags: List[str] = field(default_factory=list)   # → VFX module contract
+    motion_tag: str = ""                                  # → Motion Hub contract
 
 
 @dataclass
-class Character:
-    id: str
-    name: str
-    type: str
-    origin: str
-    height_cm: int
-    weight_kg: int
-    hp: int
-    atk: int
-    def_: int
-    moves: List[Move]
-    palette: List[str]          # hex colors → feeds Asset Architect
-    style_tags: List[str]       # e.g. "32bit", "ink-brush" → feeds VFX module
-    signature_quote: str
-    vibe: List[str]
+class Asset:
+    id: str                 # {ASSET_ID} — slug, no spaces
+    name: str               # display name
+    asset_type: str         # {ASSET_TYPE}: character | prop | environment | creature
+    origin: str             # world/region label
+    dimensions: dict        # {"height_cm": int, "weight_kg": int} or equivalent
+    stats: dict             # arbitrary key/value production stats
+    actions: List[Action]
+    palette: List[str]      # hex colors → Asset Architect material slots
+    style_tags: List[str]   # e.g. "32bit", "ink-brush", "cel-shaded" → VFX module
+    signature: str          # logline or brand statement
+    vibe: List[str]         # tone descriptors → Director's briefing notes
 
 
 @dataclass
-class World:
+class ProductionWorld:
     name: str
     regions: List[str]
-    rules: List[str]            # game logic rules (type chart, etc.)
-    characters: List[Character]
+    rules: List[str]
+    assets: List[Asset]
 
 
 class LoreLogicEngine:
     """
-    DNA:
-    - Single source of truth. All modules read from here, none write back.
-    - Every character export is versioned (v1, v2...) to avoid stale assets.
-    - Output format: lore/<character_id>.json
+    SYSTEM INSTRUCTIONS:
+    - Single source of truth. All modules READ from here. None WRITE back.
+    - {ASSET_ID} is the primary key across the entire pipeline.
+    - Adding a new asset = calling export() + update_index(). Nothing else.
+    - lore_index.json is the orchestrator's discovery manifest.
+
+    DNA RULES:
+    1. Schema changes require a version bump in the JSON output.
+    2. sfx_tags and motion_tag are the only fields other modules depend on directly.
+    3. Never embed render settings here — those belong in modules 2-4.
     """
 
     def __init__(self, output_dir="pipeline/lore"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def export(self, character: Character) -> Path:
-        """Serialize character to JSON for downstream modules."""
-        data = asdict(character)
-        path = self.output_dir / f"{character.id}.json"
+    def export(self, asset: Asset) -> Path:
+        """Serialize {ASSET_ID} to JSON for downstream modules."""
+        data = {**asdict(asset), "_schema_version": 1}
+        path = self.output_dir / f"{asset.id}.json"
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
         print(f"[LoreEngine] Exported → {path}")
         return path
 
-    def load(self, character_id: str) -> dict:
-        path = self.output_dir / f"{character_id}.json"
+    def load(self, asset_id: str) -> dict:
+        path = self.output_dir / f"{asset_id}.json"
         with open(path) as f:
             return json.load(f)
 
-    def update_index(self, character: Character) -> Path:
-        """Maintain lore_index.json — manifest of all exported characters."""
+    def update_index(self, asset: Asset) -> Path:
+        """Maintain lore_index.json — orchestrator discovery manifest."""
         index_path = self.output_dir / "lore_index.json"
         index = {}
         if index_path.exists():
             with open(index_path) as f:
                 index = json.load(f)
 
-        index[character.id] = {
-            "name": character.name,
-            "type": character.type,
-            "file": f"{character.id}.json",
+        index[asset.id] = {
+            "name":       asset.name,
+            "asset_type": asset.asset_type,
+            "file":       f"{asset.id}.json",
         }
 
         with open(index_path, "w") as f:
@@ -94,41 +98,26 @@ class LoreLogicEngine:
         return index_path
 
 
-# ── EXAMPLE CHARACTER ────────────────────────────────────
-
-if __name__ == "__main__":
-    engine = LoreLogicEngine()
-
-    embrix = Character(
-        id="embrix",
-        name="EMBRIX",
-        type="fire",
-        origin="Volcanic Ridge",
-        height_cm=95,
-        weight_kg=18,
-        hp=45, atk=14, def_=10,
-        moves=[
-            Move("Ember", "fire", "attack", 18, 15,
-                 sfx_tags=["flame_burst", "ember_particle"],
-                 motion_tag="projectile_forward"),
-            Move("Scratch", "normal", "attack", 12, 20,
-                 sfx_tags=["claw_slash", "impact_dust"],
-                 motion_tag="melee_swipe"),
-            Move("Smokescreen", "normal", "status", 0, 15,
-                 effect="lower_acc",
-                 sfx_tags=["smoke_cloud", "vision_blur"],
-                 motion_tag="area_emit"),
-            Move("Heat Up", "fire", "status", 0, 10,
-                 effect="raise_atk",
-                 sfx_tags=["body_glow_red", "heat_shimmer"],
-                 motion_tag="self_buff_pose"),
-        ],
-        palette=["#FF8C00", "#FFC800", "#FF4500", "#1A1A28"],
-        style_tags=["32bit", "pixel-art", "high-contrast"],
-        signature_quote="The flame doesn't ask permission.",
-        vibe=["fierce", "impulsive", "loyal"]
-    )
-
-    engine.export(embrix)
-    engine.update_index(embrix)
-    print(json.dumps(engine.load("embrix"), indent=2))
+# ── USAGE ────────────────────────────────────────────────
+# Replace {ASSET_ID}, {ASSET_TYPE}, etc. with your Genesis Pitch data.
+#
+# asset = Asset(
+#     id="{ASSET_ID}",
+#     name="{DISPLAY_NAME}",
+#     asset_type="{ASSET_TYPE}",
+#     origin="{WORLD_REGION}",
+#     dimensions={"height_cm": 0, "weight_kg": 0},
+#     stats={"hp": 0, "atk": 0, "def": 0},
+#     actions=[
+#         Action("{ACTION_NAME}", "{CATEGORY}", 0, 24,
+#                sfx_tags=["{SFX_TAG_1}", "{SFX_TAG_2}"],
+#                motion_tag="{MOTION_TAG}"),
+#     ],
+#     palette=["{HEX_PRIMARY}", "{HEX_SECONDARY}"],
+#     style_tags=["{STYLE_TAG}"],
+#     signature="{LOGLINE}",
+#     vibe=["{TONE_DESCRIPTOR}"]
+# )
+# engine = LoreLogicEngine()
+# engine.export(asset)
+# engine.update_index(asset)
