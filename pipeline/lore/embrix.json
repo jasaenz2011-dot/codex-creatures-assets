@@ -1,0 +1,82 @@
+{
+  "id": "embrix",
+  "name": "EMBRIX",
+  "type": "fire",
+  "origin": "Volcanic Ridge",
+  "height_cm": 95,
+  "weight_kg": 18,
+  "hp": 45,
+  "atk": 14,
+  "def_": 10,
+  "moves": [
+    {
+      "name": "Ember",
+      "type": "fire",
+      "category": "attack",
+      "power": 18,
+      "pp": 15,
+      "effect": null,
+      "sfx_tags": [
+        "flame_burst",
+        "ember_particle"
+      ],
+      "motion_tag": "projectile_forward"
+    },
+    {
+      "name": "Scratch",
+      "type": "normal",
+      "category": "attack",
+      "power": 12,
+      "pp": 20,
+      "effect": null,
+      "sfx_tags": [
+        "claw_slash",
+        "impact_dust"
+      ],
+      "motion_tag": "melee_swipe"
+    },
+    {
+      "name": "Smokescreen",
+      "type": "normal",
+      "category": "status",
+      "power": 0,
+      "pp": 15,
+      "effect": "lower_acc",
+      "sfx_tags": [
+        "smoke_cloud",
+        "vision_blur"
+      ],
+      "motion_tag": "area_emit"
+    },
+    {
+      "name": "Heat Up",
+      "type": "fire",
+      "category": "status",
+      "power": 0,
+      "pp": 10,
+      "effect": "raise_atk",
+      "sfx_tags": [
+        "body_glow_red",
+        "heat_shimmer"
+      ],
+      "motion_tag": "self_buff_pose"
+    }
+  ],
+  "palette": [
+    "#FF8C00",
+    "#FFC800",
+    "#FF4500",
+    "#1A1A28"
+  ],
+  "style_tags": [
+    "32bit",
+    "pixel-art",
+    "high-contrast"
+  ],
+  "signature_quote": "The flame doesn't ask permission.",
+  "vibe": [
+    "fierce",
+    "impulsive",
+    "loyal"
+  ]
+}

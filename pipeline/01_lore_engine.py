@@ -74,6 +74,25 @@ class LoreLogicEngine:
         with open(path) as f:
             return json.load(f)
 
+    def update_index(self, character: Character) -> Path:
+        """Maintain lore_index.json — manifest of all exported characters."""
+        index_path = self.output_dir / "lore_index.json"
+        index = {}
+        if index_path.exists():
+            with open(index_path) as f:
+                index = json.load(f)
+
+        index[character.id] = {
+            "name": character.name,
+            "type": character.type,
+            "file": f"{character.id}.json",
+        }
+
+        with open(index_path, "w") as f:
+            json.dump(index, f, indent=2)
+        print(f"[LoreEngine] Index updated → {index_path}")
+        return index_path
+
 
 # ── EXAMPLE CHARACTER ────────────────────────────────────
 
@@ -111,4 +130,5 @@ if __name__ == "__main__":
     )
 
     engine.export(embrix)
+    engine.update_index(embrix)
     print(json.dumps(engine.load("embrix"), indent=2))
