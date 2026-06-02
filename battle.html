@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex Creatures — Battle Prototype</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0f;
+    color: #e8e8e8;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  #game {
+    width: 480px;
+    background: #13131a;
+    border: 2px solid #2a2a3a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(100, 80, 255, 0.15);
+  }
+
+  /* ── Header ── */
+  #header {
+    background: #1a1a28;
+    padding: 10px 16px;
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #2a2a3a;
+  }
+
+  /* ── Battle Field ── */
+  #field {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 16px 12px;
+    gap: 12px;
+  }
+
+  .creature-card {
+    flex: 1;
+    background: #1a1a28;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .creature-sprite {
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+    background: #0f0f18;
+    border-radius: 4px;
+    border: 1px solid #1a2a3a;
+  }
+
+  .creature-sprite img {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+
+  .creature-card.enemy { border-color: #3a2a2a; }
+  .creature-card.enemy .type-badge { background: #2a1a1a; color: #ff7070; border-color: #5a2a2a; }
+
+  .creature-name {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .creature-meta {
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .type-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid #2a3a5a;
+    background: #1a2a3a;
+    color: #70a8ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .hp-label {
+    font-size: 10px;
+    color: #555;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .hp-bar-bg {
+    height: 6px;
+    background: #222230;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .hp-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease, background-color 0.6s ease;
+  }
+
+  .hp-high   { background: #50e878; }
+  .hp-mid    { background: #e8c050; }
+  .hp-low    { background: #e85050; }
+
+  .status-chip {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-top: 6px;
+    border: 1px solid transparent;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .status-chip.visible { opacity: 1; }
+  .status-burn   { border-color: #e87030; color: #e87030; background: #2a1a10; }
+  .status-sleep  { border-color: #7070e8; color: #7070e8; background: #1a1a2a; }
+  .status-poison { border-color: #a050e8; color: #a050e8; background: #1a102a; }
+
+  /* ── Battle Log ── */
+  #log-box {
+    margin: 0 16px;
+    background: #0f0f18;
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    min-height: 80px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .log-line {
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+  }
+  .log-line.dim { color: #444; }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  /* ── Move Menu ── */
+  #menu { padding: 14px 16px 20px; }
+
+  #menu-label {
+    font-size: 10px;
+    color: #444;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  #moves {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .move-btn {
+    background: #1a1a28;
+    border: 1px solid #2a2a40;
+    border-radius: 6px;
+    color: #c8c8e8;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    position: relative;
+  }
+
+  .move-btn:hover:not(:disabled) {
+    background: #22223a;
+    border-color: #5050a0;
+    transform: translateY(-1px);
+  }
+
+  .move-btn:active:not(:disabled) { transform: translateY(0); }
+
+  .move-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .move-btn .move-name { display: block; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+  .move-btn .move-meta { display: block; font-size: 10px; color: #555; margin-top: 2px; }
+
+  .move-btn.fire   { border-left: 3px solid #e87030; }
+  .move-btn.grass  { border-left: 3px solid #50c850; }
+  .move-btn.water  { border-left: 3px solid #5090e8; }
+  .move-btn.normal { border-left: 3px solid #606070; }
+  .move-btn.status-move { border-left: 3px solid #a050e8; }
+
+  /* ── Result overlay ── */
+  #result {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #result.show { display: flex; }
+  #result .result-text { }
+  #result.win  .result-text { color: #50e878; }
+  #result.lose .result-text { color: #e85050; }
+
+  #restart-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: #1a1a28;
+    border: 1px solid #3a3a60;
+    color: #c8c8e8;
+    padding: 8px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  #restart-btn:hover { background: #22223a; }
+
+  #game-wrap { position: relative; }
+</style>
+</head>
+<body>
+
+<div id="game-wrap">
+<div id="game">
+
+  <div id="header">Codex Creatures &nbsp;·&nbsp; Battle Prototype</div>
+
+  <div id="field">
+    <!-- Player -->
+    <div class="creature-card player" id="player-card">
+      <div class="creature-sprite"><img id="player-sprite" src="" alt="EMBRIX"></div>
+      <div class="creature-name" id="player-name">EMBRIX</div>
+      <div class="creature-meta">
+        Lv 12 &nbsp;<span class="type-badge">Fire</span>
+      </div>
+      <div class="hp-label">
+        <span>HP</span>
+        <span id="player-hp-text">45 / 45</span>
+      </div>
+      <div class="hp-bar-bg"><div class="hp-bar hp-high" id="player-hp-bar" style="width:100%"></div></div>
+      <div class="status-chip" id="player-status"></div>
+    </div>
+
+    <!-- Enemy -->
+    <div class="creature-card enemy" id="enemy-card">
+      <div class="creature-sprite"><img id="enemy-sprite" src="" alt="LEAFANG"></div>
+      <div class="creature-name" id="enemy-name">LEAFANG</div>
+      <div class="creature-meta">
+        Lv 11 &nbsp;<span class="type-badge">Grass</span>
+      </div>
+      <div class="hp-label">
+        <span>HP</span>
+        <span id="enemy-hp-text">38 / 38</span>
+      </div>
+      <div class="hp-bar-bg"><div class="hp-bar hp-high" id="enemy-hp-bar" style="width:100%"></div></div>
+      <div class="status-chip" id="enemy-status"></div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div id="log-box"></div>
+
+  <!-- Moves -->
+  <div id="menu">
+    <div id="menu-label">Choose a move</div>
+    <div id="moves"></div>
+  </div>
+
+</div>
+<div id="result">
+  <div class="result-text" id="result-text"></div>
+  <button id="restart-btn" onclick="init()">Play Again</button>
+</div>
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────
+
+const CREATURES = {
+  embrix: {
+    name: "EMBRIX",
+    type: "fire",
+    maxHp: 45,
+    atk: 14,
+    def: 10,
+    moves: ["ember", "scratch", "smokescreen", "heat_up"],
+  },
+  leafang: {
+    name: "LEAFANG",
+    type: "grass",
+    maxHp: 38,
+    atk: 12,
+    def: 8,
+    moves: ["vine_whip", "tackle", "leech_seed", "growl"],
+  },
+};
+
+const MOVES = {
+  ember:       { name: "Ember",       type: "fire",   power: 18, pp: 15, category: "attack", desc: "15 PP · Fire" },
+  scratch:     { name: "Scratch",     type: "normal", power: 12, pp: 20, category: "attack", desc: "20 PP · Normal" },
+  smokescreen: { name: "Smokescreen", type: "normal", power:  0, pp: 15, category: "status", effect: "lower_acc", desc: "15 PP · Lowers accuracy" },
+  heat_up:     { name: "Heat Up",     type: "fire",   power:  0, pp: 10, category: "status", effect: "raise_atk", desc: "10 PP · Raises ATK" },
+  vine_whip:   { name: "Vine Whip",   type: "grass",  power: 16, pp: 15, category: "attack", desc: "15 PP · Grass" },
+  tackle:      { name: "Tackle",      type: "normal", power: 12, pp: 20, category: "attack", desc: "20 PP · Normal" },
+  leech_seed:  { name: "Leech Seed",  type: "grass",  power:  0, pp: 10, category: "status", effect: "leech",     desc: "10 PP · Drains HP" },
+  growl:       { name: "Growl",       type: "normal", power:  0, pp: 20, category: "status", effect: "lower_atk", desc: "20 PP · Lowers ATK" },
+};
+
+// type chart: attacker type → defender type → multiplier
+const TYPE_CHART = {
+  fire:   { grass: 1.5, water: 0.5, fire: 0.5 },
+  grass:  { water: 1.5, fire:  0.5, grass: 0.5 },
+  water:  { fire:  1.5, grass: 0.5, water: 0.5 },
+  normal: {},
+};
+
+// ── State ────────────────────────────────────────────────
+
+let player, enemy, turn, busy;
+
+function makeState(key) {
+  const base = CREATURES[key];
+  return {
+    ...base,
+    hp: base.maxHp,
+    atkMod: 0,    // -3 to +3
+    accMod: 0,
+    leech: false,
+    pp: Object.fromEntries(base.moves.map(m => [m, MOVES[m].pp])),
+  };
+}
+
+function init() {
+  player = makeState("embrix");
+  enemy  = makeState("leafang");
+  turn   = "player";
+  busy   = false;
+
+  document.getElementById("result").className = "";
+  renderHp("player");
+  renderHp("enemy");
+  renderStatus("player");
+  renderStatus("enemy");
+  buildMoveMenu();
+  clearLog();
+  log(`A wild ${enemy.name} appeared!`);
+  log(`Go, ${player.name}!`);
+}
+
+// ── Rendering ────────────────────────────────────────────
+
+function renderHp(who) {
+  const s    = who === "player" ? player : enemy;
+  const pct  = Math.max(0, s.hp / s.maxHp);
+  const bar  = document.getElementById(`${who}-hp-bar`);
+  const txt  = document.getElementById(`${who}-hp-text`);
+  bar.style.width = (pct * 100) + "%";
+  bar.className = "hp-bar " + (pct > 0.5 ? "hp-high" : pct > 0.25 ? "hp-mid" : "hp-low");
+  txt.textContent = `${Math.max(0, s.hp)} / ${s.maxHp}`;
+}
+
+function renderStatus(who) {
+  const s   = who === "player" ? player : enemy;
+  const el  = document.getElementById(`${who}-status`);
+  if (s.leech) {
+    el.textContent = "LEECH";
+    el.className = "status-chip visible status-poison";
+  } else {
+    el.className = "status-chip";
+  }
+}
+
+function buildMoveMenu() {
+  const container = document.getElementById("moves");
+  container.innerHTML = "";
+  player.moves.forEach(moveKey => {
+    const m   = MOVES[moveKey];
+    const btn = document.createElement("button");
+    btn.className = `move-btn ${m.type === "status" ? "status-move" : m.type}`;
+    btn.dataset.move = moveKey;
+    btn.innerHTML = `<span class="move-name">${m.name}</span><span class="move-meta">${m.desc} &nbsp;|&nbsp; ${player.pp[moveKey]} left</span>`;
+    btn.onclick = () => playerTurn(moveKey);
+    if (player.pp[moveKey] <= 0) btn.disabled = true;
+    container.appendChild(btn);
+  });
+}
+
+function setButtonsDisabled(val) {
+  document.querySelectorAll(".move-btn").forEach(b => b.disabled = val);
+}
+
+// ── Logging ──────────────────────────────────────────────
+
+let logLines = [];
+
+function clearLog() {
+  logLines = [];
+  document.getElementById("log-box").innerHTML = "";
+}
+
+function log(text, dim = false) {
+  logLines.push(text);
+  if (logLines.length > 4) {
+    // fade old lines
+    const box = document.getElementById("log-box");
+    box.querySelectorAll(".log-line:not(.dim)")[0]?.classList.add("dim");
+  }
+  const box  = document.getElementById("log-box");
+  const line = document.createElement("div");
+  line.className = "log-line" + (dim ? " dim" : "");
+  line.textContent = text;
+  box.appendChild(line);
+  // keep last 4 visible
+  const lines = box.querySelectorAll(".log-line");
+  if (lines.length > 4) lines[0].remove();
+}
+
+// ── Battle Logic ─────────────────────────────────────────
+
+function effectiveness(moveType, defenderType) {
+  return TYPE_CHART[moveType]?.[defenderType] ?? 1.0;
+}
+
+function calcDamage(attacker, move) {
+  const mult = effectiveness(move.type, attacker === player ? enemy.type : player.type);
+  const atkStat = attacker.atk * (1 + attacker.atkMod * 0.2);
+  const defStat = (attacker === player ? enemy : player).def;
+  const base = Math.floor((move.power * atkStat) / defStat);
+  // slight random variance ±10%
+  const variance = 0.9 + Math.random() * 0.2;
+  return { dmg: Math.max(1, Math.round(base * mult * variance)), mult };
+}
+
+function applyMove(attacker, defender, moveKey, attackerLabel, defenderLabel) {
+  const m = MOVES[moveKey];
+
+  // accuracy check (smokescreen lowers by 20% per stage)
+  if (attacker.accMod < 0) {
+    const missChance = Math.abs(attacker.accMod) * 0.15;
+    if (Math.random() < missChance) {
+      log(`${attackerLabel} used ${m.name}... but missed!`);
+      return;
+    }
+  }
+
+  if (m.category === "attack") {
+    const { dmg, mult } = calcDamage(attacker, m);
+    defender.hp -= dmg;
+    let msg = `${attackerLabel} used ${m.name}! (${dmg} dmg)`;
+    if (mult >= 1.5) msg += " — Super effective!";
+    if (mult <= 0.5) msg += " — Not very effective.";
+    log(msg);
+    renderHp(defender === enemy ? "enemy" : "player");
+  } else {
+    // status moves
+    switch (m.effect) {
+      case "lower_acc":
+        defender.accMod = Math.max(-3, defender.accMod - 1);
+        log(`${attackerLabel} used ${m.name}! ${defenderLabel}'s accuracy fell.`);
+        break;
+      case "raise_atk":
+        attacker.atkMod = Math.min(3, attacker.atkMod + 1);
+        log(`${attackerLabel} used ${m.name}! ATK rose!`);
+        break;
+      case "lower_atk":
+        defender.atkMod = Math.max(-3, defender.atkMod - 1);
+        log(`${attackerLabel} used ${m.name}! ${defenderLabel}'s ATK fell.`);
+        break;
+      case "leech":
+        if (!defender.leech) {
+          defender.leech = true;
+          log(`${attackerLabel} used ${m.name}! ${defenderLabel} is seeded!`);
+          renderStatus(defender === enemy ? "enemy" : "player");
+        } else {
+          log(`${attackerLabel} used ${m.name}... but it failed!`);
+        }
+        break;
+    }
+  }
+}
+
+function applyLeech(who) {
+  const s = who === "player" ? player : enemy;
+  const other = who === "player" ? enemy : player;
+  if (s.leech) {
+    const drain = Math.max(1, Math.floor(s.maxHp * 0.1));
+    s.hp = Math.max(0, s.hp - drain);
+    other.hp = Math.min(other.maxHp, other.hp + drain);
+    log(`${s.name} is drained by Leech Seed! (-${drain} HP)`);
+    renderHp(who);
+    renderHp(who === "player" ? "enemy" : "player");
+  }
+}
+
+function checkFainted() {
+  if (enemy.hp <= 0) {
+    enemy.hp = 0;
+    renderHp("enemy");
+    return "player_wins";
+  }
+  if (player.hp <= 0) {
+    player.hp = 0;
+    renderHp("player");
+    return "enemy_wins";
+  }
+  return null;
+}
+
+function showResult(winner) {
+  const el = document.getElementById("result");
+  const txt = document.getElementById("result-text");
+  if (winner === "player_wins") {
+    el.className = "show win";
+    txt.textContent = `${enemy.name} fainted! You win!`;
+  } else {
+    el.className = "show lose";
+    txt.textContent = `${player.name} fainted! You lose.`;
+  }
+}
+
+// ── Turn Flow ────────────────────────────────────────────
+
+async function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function playerTurn(moveKey) {
+  if (busy || turn !== "player") return;
+  busy = true;
+  setButtonsDisabled(true);
+
+  player.pp[moveKey]--;
+  applyMove(player, enemy, moveKey, player.name, enemy.name);
+  await wait(600);
+
+  const result1 = checkFainted();
+  if (result1) { showResult(result1); busy = false; return; }
+
+  applyLeech("enemy");
+  await wait(500);
+
+  const result2 = checkFainted();
+  if (result2) { showResult(result2); busy = false; return; }
+
+  await wait(400);
+  await enemyTurn();
+}
+
+async function enemyTurn() {
+  // pick a random move that still has PP
+  const available = enemy.moves.filter(m => enemy.pp[m] > 0);
+  if (available.length === 0) { log(`${enemy.name} has no moves left!`); busy = false; return; }
+  const moveKey = available[Math.floor(Math.random() * available.length)];
+
+  enemy.pp[moveKey]--;
+  applyMove(enemy, player, moveKey, enemy.name, player.name);
+  await wait(600);
+
+  const result3 = checkFainted();
+  if (result3) { showResult(result3); busy = false; return; }
+
+  applyLeech("player");
+  await wait(500);
+
+  const result4 = checkFainted();
+  if (result4) { showResult(result4); busy = false; return; }
+
+  buildMoveMenu();
+  busy = false;
+}
+
+// ── Sprites ──────────────────────────────────────────────
+const SPRITES = {
+  embrix: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAA7UlEQVR4nO2b0QmEMBAFN2JZlmUZlnV95UrIxyMOsjO/4jIMgeS4OCpkPjXTGSvGXWPX7GPX4K9gAFqAxgC0AI0BaAGa5f4a7/PX4vkvml5V2Tmh/QowAC1AYwBagMYAtADN2L7Pp2w+J7RfAQagBWgMQAvQGIAWoDEALUBjAFqAxgC0AI0BaAGaM56w+r3+wv8CCe1XgAFoARoD0AI0BqAFaOJzwLiz9+eTGmScq8sFb1yETPGCRIABaAEaA9ACNO0DxOcAeh9Pab8CDEAL0BiAFqAxAC1A0z5A/EGiH05+HAPQAjQGoAVo2gf4AyMyF0qg/9wnAAAAAElFTkSuQmCC",
+  leafang: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABEUlEQVR4nO2bwQ3CMBAEbUQpebgYHiknJaScPFKMH/RCOsg9Vqchup0vYEYjI58i05vI9t1+6hoR+7L3rLVfWQs/BQegBWgcgBagcQBagCY8X9Vzfs55+/oYQ1m+tabNCeV3gAPQAjQOQAvQOAAtQNOzz3mV7Dmh/A5wAFqAxgFoARoHoAVo3tEbss959fvVOaH8DnAAWoDGAWgBGgegBWjCOSDi+BzS59dzVRUkyu8AB6AFaByAFqBxAFqARp4D6HNcpfwOcABagMYBaAEaB6AFaMI5IHru/oT7AXfIFyX/IYAvSgo4AC1A4wC0AE35APLzAHVOyD7nI+Q/JKpzQvY5H1H+J+AAtACNA9ACNOUDXHpOMVL/UzwwAAAAAElFTkSuQmCC"
+};
+
+function loadSprites() {
+  document.getElementById("player-sprite").src = SPRITES.embrix;
+  document.getElementById("enemy-sprite").src = SPRITES.leafang;
+}
+
+// ── Start ────────────────────────────────────────────────
+loadSprites();
+init();
+</script>
+</body>
+</html>
