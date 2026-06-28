@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Voice Chat</h1>
+      <div class="status-bar">
+        <span id="status">Disconnected</span>
+        <span id="latency" class="latency"></span>
+      </div>
+    </header>
+
+    <main>
+      <section class="join-panel" id="join-panel">
+        <input id="room-input" type="text" placeholder="Room name (e.g. room-1)" maxlength="32" />
+        <button id="join-btn">Join Room</button>
+      </section>
+
+      <section class="room-panel hidden" id="room-panel">
+        <div class="room-info">
+          <span>Room: <strong id="room-name"></strong></span>
+          <button id="leave-btn">Leave</button>
+        </div>
+
+        <div class="peers" id="peers">
+          <div class="self-peer peer-card">
+            <div class="avatar" id="self-avatar">You</div>
+            <div class="peer-label">You</div>
+            <div class="mic-toggle">
+              <button id="mute-btn" class="mute-btn" title="Toggle mute">
+                <svg id="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <svg id="mic-off-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                  <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                  <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-hint" id="empty-hint">Share the room name with others to start chatting</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
