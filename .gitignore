@@ -1,0 +1,33 @@
+# Node / frontend
+node_modules/
+dist/
+apps/desktop/src-tauri/target/
+
+# Rust
+target/
+
+# Python / backend
+backend/.venv/
+backend/venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local model + generation artifacts (large binaries, never commit)
+backend/models/
+backend/outputs/
+*.safetensors
+*.ckpt
+*.bin
+
+# Vendored / submoduled third-party apps (e.g. ComfyUI) are managed separately
+vendor/*/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Env files
+.env
+.env.local
