@@ -1,0 +1,92 @@
+[
+  {
+    "id": "wan27-uncensored",
+    "displayName": "Wan 2.7 Uncensored",
+    "tags": ["wan", "uncensored", "video"],
+    "type": "video",
+    "modelFile": "wan27_uncensored.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video", "reference-guided"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 832, "height": 480, "frames": 81 }
+  },
+  {
+    "id": "wan27-reference",
+    "displayName": "Wan 2.7 Reference",
+    "tags": ["wan", "reference", "video"],
+    "type": "video",
+    "modelFile": "wan27_reference.safetensors",
+    "supportedModes": ["image-to-video", "reference-guided"],
+    "workflow": "img2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 832, "height": 480, "frames": 81 }
+  },
+  {
+    "id": "wan27-edit",
+    "displayName": "Wan 2.7 Edit",
+    "tags": ["wan", "edit", "video-to-video"],
+    "type": "video",
+    "modelFile": "wan27_edit.safetensors",
+    "supportedModes": ["video-to-video", "image-to-video"],
+    "workflow": "vid2vid.json",
+    "defaults": { "steps": 25, "cfg": 6, "width": 832, "height": 480, "frames": 81 }
+  },
+  {
+    "id": "wan26",
+    "displayName": "Wan 2.6",
+    "tags": ["wan", "video"],
+    "type": "video",
+    "modelFile": "wan26.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 832, "height": 480, "frames": 65 }
+  },
+  {
+    "id": "longcat-distilled",
+    "displayName": "Longcat Distilled",
+    "tags": ["longcat", "fast", "video"],
+    "type": "video",
+    "modelFile": "longcat_distilled.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 8, "cfg": 1, "width": 832, "height": 480, "frames": 81 }
+  },
+  {
+    "id": "longcat-full",
+    "displayName": "Longcat Full Quality",
+    "tags": ["longcat", "quality", "video"],
+    "type": "video",
+    "modelFile": "longcat_full.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 832, "height": 480, "frames": 121 }
+  },
+  {
+    "id": "wan25-preview",
+    "displayName": "Wan 2.5 Preview",
+    "tags": ["wan", "preview", "video"],
+    "type": "video",
+    "modelFile": "wan25_preview.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 25, "cfg": 6, "width": 832, "height": 480, "frames": 65 }
+  },
+  {
+    "id": "wan21-pro",
+    "displayName": "Wan 2.1 Pro",
+    "tags": ["wan", "pro", "video"],
+    "type": "video",
+    "modelFile": "wan21_pro.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 512, "height": 512, "frames": 49 }
+  },
+  {
+    "id": "ovi",
+    "displayName": "Ovi",
+    "tags": ["ovi", "video"],
+    "type": "video",
+    "modelFile": "ovi.safetensors",
+    "supportedModes": ["text-to-video", "image-to-video", "reference-guided"],
+    "workflow": "txt2vid.json",
+    "defaults": { "steps": 30, "cfg": 6, "width": 832, "height": 480, "frames": 81 }
+  }
+]

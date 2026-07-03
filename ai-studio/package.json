@@ -1,0 +1,17 @@
+{
+  "name": "ai-studio",
+  "version": "0.1.0",
+  "description": "Local AI Studio — image and video generation powered by ComfyUI",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {
+    "electron": "^30.0.0",
+    "node-fetch": "^3.3.2",
+    "form-data": "^4.0.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {}
+}
