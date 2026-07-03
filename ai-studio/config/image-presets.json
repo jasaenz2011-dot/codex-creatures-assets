@@ -1,0 +1,66 @@
+[
+  {
+    "id": "venice-sd35",
+    "displayName": "Venice SD3.5",
+    "tags": ["realistic", "artistic", "sd35"],
+    "type": "image",
+    "modelFile": "venice_sd35.safetensors",
+    "supportedModes": ["text-to-image", "image-to-image", "inpaint", "outpaint"],
+    "workflow": "txt2img.json",
+    "defaults": {
+      "steps": 28,
+      "cfg": 4.5,
+      "width": 1024,
+      "height": 1024,
+      "negative": "ugly, blurry, low quality, watermark"
+    }
+  },
+  {
+    "id": "anime-wai",
+    "displayName": "Anime (WAI)",
+    "tags": ["anime", "illustration", "2d"],
+    "type": "image",
+    "modelFile": "wai_anime.safetensors",
+    "supportedModes": ["text-to-image", "image-to-image", "inpaint", "reference-guided"],
+    "workflow": "txt2img.json",
+    "defaults": {
+      "steps": 25,
+      "cfg": 7,
+      "width": 768,
+      "height": 1152,
+      "negative": "3d, realistic, bad anatomy, extra limbs, watermark"
+    }
+  },
+  {
+    "id": "lustify-sdxl",
+    "displayName": "Lustify SDXL",
+    "tags": ["sdxl", "realistic", "adult"],
+    "type": "image",
+    "modelFile": "lustify_sdxl.safetensors",
+    "supportedModes": ["text-to-image", "image-to-image", "inpaint", "outpaint", "reference-guided"],
+    "workflow": "txt2img.json",
+    "defaults": {
+      "steps": 30,
+      "cfg": 7,
+      "width": 1024,
+      "height": 1024,
+      "negative": "ugly, deformed, low quality, blurry, watermark"
+    }
+  },
+  {
+    "id": "lustify-v8",
+    "displayName": "Lustify v8",
+    "tags": ["realistic", "adult", "v8"],
+    "type": "image",
+    "modelFile": "lustify_v8.safetensors",
+    "supportedModes": ["text-to-image", "image-to-image", "inpaint", "outpaint", "reference-guided"],
+    "workflow": "txt2img.json",
+    "defaults": {
+      "steps": 30,
+      "cfg": 7,
+      "width": 512,
+      "height": 768,
+      "negative": "ugly, deformed, low quality, blurry, watermark"
+    }
+  }
+]

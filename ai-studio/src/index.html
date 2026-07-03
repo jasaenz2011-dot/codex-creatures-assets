@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div id="sidebar-header"><span>🎨</span> AI Studio</div>
+
+    <div id="type-tabs">
+      <button class="type-tab active" data-type="image">Image</button>
+      <button class="type-tab" data-type="video">Video</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Models</div>
+    </div>
+
+    <div id="model-list"></div>
+
+    <div id="status-bar">
+      <div id="status-dot" class="checking"></div>
+      <span id="status-text">Checking ComfyUI…</span>
+      <button id="launch-btn">Launch</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <main id="main">
+    <div id="mode-bar"></div>
+
+    <div id="gallery" class="empty">
+      <div id="gallery-empty">
+        <h2>Nothing generated yet</h2>
+        <p>Pick a model, type a prompt, and hit Generate.</p>
+      </div>
+    </div>
+
+    <!-- Prompt area -->
+    <div id="prompt-area">
+
+      <!-- Reference thumbnails -->
+      <div id="ref-preview"></div>
+
+      <!-- Extra buttons row -->
+      <div id="extras-bar">
+        <button class="extras-btn" id="ref-image-btn">📎 Reference image</button>
+        <button class="extras-btn" id="ref-video-btn">🎬 Reference video</button>
+        <button class="extras-btn" id="advanced-toggle">⚙️ Advanced ▾</button>
+      </div>
+
+      <!-- Advanced settings panel -->
+      <div id="advanced-panel">
+        <div class="adv-field">
+          <label>Steps</label>
+          <input type="number" id="adv-steps" min="1" max="150" value="30" />
+        </div>
+        <div class="adv-field">
+          <label>CFG Scale</label>
+          <input type="number" id="adv-cfg" min="1" max="20" step="0.5" value="7" />
+        </div>
+        <div class="adv-field">
+          <label>Width</label>
+          <input type="number" id="adv-width" min="64" max="2048" step="64" value="512" />
+        </div>
+        <div class="adv-field">
+          <label>Height</label>
+          <input type="number" id="adv-height" min="64" max="2048" step="64" value="512" />
+        </div>
+        <div class="adv-field">
+          <label>Seed (-1 = random)</label>
+          <input type="number" id="adv-seed" value="-1" />
+        </div>
+        <div class="adv-field full">
+          <label>Negative prompt</label>
+          <textarea id="adv-negative" placeholder="ugly, blurry, low quality…"></textarea>
+        </div>
+      </div>
+
+      <!-- Main prompt row -->
+      <div id="prompt-box-wrap">
+        <textarea
+          id="prompt-input"
+          placeholder="Describe what you want to generate…"
+          rows="2"
+        ></textarea>
+        <button id="generate-btn">Generate</button>
+      </div>
+
+    </div><!-- /prompt-area -->
+  </main>
+
+</div><!-- /app -->
+
+<!-- Drop overlay -->
+<div id="drop-overlay">Drop image here</div>
+
+<!-- Job queue toasts -->
+<div id="queue-overlay"></div>
+
+<script src="renderer.js"></script>
+</body>
+</html>
